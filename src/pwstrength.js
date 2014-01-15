@@ -120,11 +120,11 @@
 
             if (options.showVerdicts) {
                 if (options.viewports.verdict) {
-                    $verdict = $(options.viewports.verdict).find(".password-verdict");
+                    $verdict = $(options.viewports.verdict).find(".password-status");
                 } else {
-                    $verdict = $el.parent().find(".password-verdict");
+                    $verdict = $el.parent().find(".password-status");
                     if ($verdict.length === 0) {
-                        $verdict = $('<span class="password-verdict"></span>');
+                        $verdict = $('<p class="password-status"></p>');
                         $verdict.insertAfter($el);
                     }
                 }
@@ -196,7 +196,7 @@
                         progressbar,
                         verdict;
 
-                    $el.data("pwstrength", allOptions);
+                    $el.data("pwstrength", jQuery.extend(true, {}, allOptions));
 
                     $el.on("keyup", function (event) {
                         var options = $el.data("pwstrength");
@@ -217,7 +217,7 @@
                     $el.data("pwstrength").progressbar = progressbar;
 
                     if (allOptions.showVerdicts) {
-                        verdict = $('<span class="password-verdict">' + allOptions.verdicts[0] + '</span>');
+                        verdict = $('<p class="password-status">' + allOptions.verdicts[0] + '</p>');
                         if (allOptions.viewports.verdict) {
                             $(allOptions.viewports.verdict).append(verdict);
                         } else {
@@ -233,10 +233,27 @@
 
             destroy: function () {
                 this.each(function (idx, el) {
-                    var $el = $(el);
-                    $el.parent().find("span.password-verdict").remove();
-                    $el.parent().find("div.progress").remove();
-                    $el.parent().find("ul.error-list").remove();
+                    var $el = $(el),
+                        viewports = $el.data("pwstrength").viewports;
+                    //verdict
+                    if (viewports.verdict) {
+                        $(viewports.verdict).find("p.password-status").remove();
+                    }else{
+                        $el.parent().find("p.password-status").remove();
+                    }
+                    //progress
+                    if (viewports.progress) {
+                        $(viewports.progress).find("div.progress").remove();
+                    }else{
+                        $el.parent().find("div.progress").remove();
+                    }
+                    //errors
+                    if (viewports.errors) {
+                        $(viewports.errors).find("ul.error-list").remove();
+                    }else{
+                        $el.parent().find("ul.error-list").remove();
+                    }
+                    //data
                     $el.removeData("pwstrength");
                 });
             },
@@ -258,8 +275,11 @@
                         errors = $el.data("pwstrength").errors,
                         viewports = $el.data("pwstrength").viewports,
                         verdict;
-                    $el.parent().find("ul.error-list").remove();
-
+                    if (viewports.errors) {
+                        $(viewports.errors).find("ul.error-list").remove();
+                    }else{
+                        $el.parent().find("ul.error-list").remove();
+                    }
                     if (errors.length > 0) {
                         $.each(errors, function (i, item) {
                             output += '<li>' + item + '</li>';
@@ -269,7 +289,11 @@
                             $(viewports.errors).html(output);
                         } else {
                             output = $(output);
-                            verdict = $el.parent().find("span.password-verdict");
+                            if (viewports.verdict) {
+                                verdict = $(viewports.verdict).find("p.password-status");
+                            }else{
+                                verdict = $el.parent().find("p.password-status");
+                            }
                             if (verdict.length > 0) {
                                 el = verdict;
                             }
